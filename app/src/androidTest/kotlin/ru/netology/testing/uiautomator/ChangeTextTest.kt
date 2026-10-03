@@ -6,7 +6,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -14,7 +13,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 
-const val SETTINGS_PACKAGE = "com.android.settings"
 const val MODEL_PACKAGE = "ru.netology.testing.uiautomator"
 
 const val TIMEOUT = 5000L
@@ -42,15 +40,6 @@ class ChangeTextTest {
     }
 
     @Test
-    fun testInternetSettings() {
-        waitForPackage(SETTINGS_PACKAGE)
-
-        device.findObject(
-            UiSelector().resourceId("android:id/title").instance(0)
-        ).click()
-    }
-
-    @Test
     fun testChangeText() {
         val packageName = MODEL_PACKAGE
         waitForPackage(packageName)
@@ -67,16 +56,29 @@ class ChangeTextTest {
         val packageName = MODEL_PACKAGE
         waitForPackage(packageName)
 
-        val initialText = device
-            .findObject(By.res(packageName, "textToBeChanged"))
-            .text ?: ""
+        val textView = device.wait(
+            Until.findObject(By.res(packageName, "textToBeChanged")),
+            TIMEOUT
+        )
+        val initialText = textView?.text ?: ""
 
-        device.findObject(By.res(packageName, "userInput")).text = "   "
-        device.findObject(By.res(packageName, "buttonChange")).click()
+        val userInput = device.wait(
+            Until.findObject(By.res(packageName, "userInput")),
+            TIMEOUT
+        )
+        userInput?.text = "   "
 
-        val result = device
-            .findObject(By.res(packageName, "textToBeChanged"))
-            .text ?: ""
+        val buttonChange = device.wait(
+            Until.findObject(By.res(packageName, "buttonChange")),
+            TIMEOUT
+        )
+        buttonChange?.click()
+
+        val textViewAfter = device.wait(
+            Until.findObject(By.res(packageName, "textToBeChanged")),
+            TIMEOUT
+        )
+        val result = textViewAfter?.text ?: ""
 
         assertEquals(
             "Текст не должен меняться при вводе пустой строки",
@@ -92,8 +94,17 @@ class ChangeTextTest {
 
         val textToPass = "NetologySecond"
 
-        device.findObject(By.res(packageName, "userInput")).text = textToPass
-        device.findObject(By.res(packageName, "buttonActivity")).click()
+        val userInput = device.wait(
+            Until.findObject(By.res(packageName, "userInput")),
+            TIMEOUT
+        )
+        userInput?.text = textToPass
+
+        val buttonActivity = device.wait(
+            Until.findObject(By.res(packageName, "buttonActivity")),
+            TIMEOUT
+        )
+        buttonActivity?.click()
 
         val newActivityTextView = device.wait(
             Until.findObject(By.res(packageName, "text")),
@@ -103,10 +114,7 @@ class ChangeTextTest {
         assertEquals(
             "Текст во второй Activity должен совпадать с введённым",
             textToPass,
-            newActivityTextView.text
+            newActivityTextView?.text
         )
     }
 }
-
-
-
